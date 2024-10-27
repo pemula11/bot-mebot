@@ -6,7 +6,6 @@ yarn-error.log
 # Environment variables
 .env
 
-src/data/database.json
 # Logs
 logs/
 *.log
