@@ -6,10 +6,12 @@ yarn-error.log
 # Environment variables
 .env
 
-# Logs
+src/data/database.json
+# Logs & data
 logs/
 *.log
-
+baileys_store.json
+src/data/database.json
 # OS generated files
 .DS_Store
 Thumbs.db

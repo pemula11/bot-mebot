@@ -6,6 +6,7 @@ const DownloaderVideo = require('../tools/api/downloaderVideo');
 const DownloaderApi = require('../tools/api/downloaderApi');
 const YTdownloder = require('../tools/y2madeDownloader');
 const YTMusicdownloder = require('../tools/y2AudioDownloader');
+const logger = require("../lib/pino");
 
 const databaseHandler = new DatabaseHandler();
 const chatGPT = new ApiAI();
@@ -32,6 +33,7 @@ class MessageHandler{
     }
 
     async handleMessage(dataMessage){
+    try{
         console.log("dataMessage: ", dataMessage);
         const {name, jid, isGroup, mediaMessage, text, file, location} = dataMessage;
         if (isGroup) {
@@ -84,7 +86,11 @@ class MessageHandler{
             default:
                 return `Perintah Tidak Dikenal!`;
         }
-
+    }
+    catch (error) {
+       logger.error("error while handle message: ", error);
+        return `Maaf, Terjadi Kesalahan!`;
+    }
     }
 
     

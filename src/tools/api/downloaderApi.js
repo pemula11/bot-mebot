@@ -26,8 +26,8 @@ class DownloaderApi {
             const dataReceived ={
                 title: data.title,
                 url: data.url,
-                type: "audio",
-                isTiktok: true
+                type: "audio"
+                
             }
             return dataReceived;
         } catch (error) {
@@ -55,7 +55,8 @@ class DownloaderApi {
                 
                 url: data.data.play,
                 title: data.data.title,
-                type: "video"
+                type: "video",
+                isTiktok: true
             }
             return dataReceived;
         } catch (error) {

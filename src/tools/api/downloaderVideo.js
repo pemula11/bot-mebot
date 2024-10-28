@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('../../lib/pino');
 
 class DownloaderVideo {
     constructor(parameters) {
@@ -26,7 +27,7 @@ class DownloaderVideo {
             }
             return dataReceived;
         } catch (error) {
-            console.log("error while use Downloader: ", error);
+           logger.error("error while use Downloader: ", error);
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
         }    
     }

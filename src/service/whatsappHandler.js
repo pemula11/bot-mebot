@@ -1,21 +1,35 @@
 const {  useMultiFileAuthState,
     fetchLatestBaileysVersion,
+    fetchLatestWaWebVersion,
     makeCacheableSignalKeyStore,
     default: makeWASocket,
     Browsers,
     DisconnectReason,
     prepareWAMessageMedia,
+    makeInMemoryStore,
     generateWAMessageFromContent,
+    
    } =  require('baileys');
 const { get } = require('http');
 const pino = require("pino");
 const fs = require("fs");
 const Long = require("long");
 
+const pinoLogger = require('../lib/pino');
 const { getDataMessage } = require('../lib/helper');
+const logger = pinoLogger.child({ module: "whatsapp" });
 
-//const readline = require("readline");
-//const question = (text) => { const rl = readline.createInterface({ input: process.stdin, output: process.stdout }); return new Promise((resolve) => { rl.question(text, resolve) }) };
+
+const readline = require("readline");
+
+
+const question = (text) => 
+    {
+       
+         const rl = readline.createInterface({ input: process.stdin, output: process.stdout }); 
+         return new Promise((resolve) => { rl.question(text, resolve) }) 
+        
+    };
 
 
 class WhatsappHandler {
@@ -25,6 +39,11 @@ class WhatsappHandler {
             qr: "",
           };
         this.messageHandler = messageHandler;
+        this.loginMethod = process.env.LOGIN_METHOD || "pairing";
+        this.store = makeInMemoryStore({ })
+        if (this.loginMethod !== "pairing" && this.loginMethod !== "qr") {
+            throw new Error("Invalid login method");
+        }
     }
 
     async defineAuthState() {
@@ -33,31 +52,52 @@ class WhatsappHandler {
     }
 
     async setSocket(){
-        
+        console.log("===========================" + this.loginMethod + "===========================");
         this.authState = await this.defineAuthState();
         const { state, saveCreds } = await useMultiFileAuthState('auth_info_bailey')
-        const { version } = await fetchLatestBaileysVersion();
-        const browser = Browsers.ubuntu("chrome");
+        const { version } = await fetchLatestWaWebVersion();
+        
+        const browser = ["Ubuntu", "Chrome", "20.0.04"];
+        const additionalConfig = {
+            ...this.loginMethod === "pairing" && {
+                printQRInTerminal: false,
+            },
+            ...this.loginMethod === "qr" && {
+                printQRInTerminal: true,
+                qrTimeout: 30000,
+            },
+        };
+
+        
+
         return  makeWASocket({
                 // can provide additional config here
-                logger: pino({ level: "silent" }),
-                printQRInTerminal: true,
-                auth:  this.authState.state,
-                browser,
-                version,
+                version: [2, 3000, 1015901307],
+                logger: logger,
+                auth: {
+                    creds: this.authState.state.creds,
+                    keys: makeCacheableSignalKeyStore(this.authState.state.keys, logger),
+                  },
+                browser: browser,
                 connectTimeoutMs: 60 * 1000,
-                qrTimeout: 30000,
+                shouldSyncHistoryMessage: msg => {
+                    console.log(`\x1b[32mMemuat Chat [${msg.progress}%]\x1b[39m`);
+                    return !!msg.syncType;
+                  },
+                  syncFullHistory: true,
+                
                 emitOwnEvents: true,
                 generateHighQualityLinkPreview: true,
-            });
+                
+            }, additionalConfig);
     
-        
+    
     
     }
 
 
     async connectionUpdate({ qr, connection, lastDisconnect }) {
-        if (qr) {
+        if (qr && this.loginMethod === "qr") {
             console.log("Please scan the QR code");
             if (this.instanceQr.count > 3) {
               this.instanceQr.count = 0;
@@ -69,14 +109,17 @@ class WhatsappHandler {
             this.instanceQr.count++;
             this.instanceQr.qr = qr;
           }
+        
         if (connection === "close") {
             const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
             console.log("connection closed due to ", lastDisconnect.error, ", reconnecting ", shouldReconnect);
             if (shouldReconnect) {
             await this.connectToWhatsApp();
             }
-        } else if (connection === "open") {
+        } 
+        if (connection === "open") {
             console.log("opened connection");
+            
         }
       
     }
@@ -87,13 +130,23 @@ class WhatsappHandler {
             this.sock = await this.setSocket()
             //await this.sock.updateProfileName("Sipaling")
         
+            
+
             // this will be called as soon as the credentials are updated
              this.eventHandler()
-        
+             if (!this.sock.authState.creds.registered && this.loginMethod === "pairing") {
+                await this.enterCode();
+            }
+
             
+            // can be read from a file
+            this.store.readFromFile('./baileys_store.json')
+            // saves the state to a file every 10s
+   
+            this.store.bind(this.sock.ev)
             return this.sock;
         } catch (error) {
-            console.log("error", error);
+            logger.error("error: ", error);
         }
     }
 
@@ -103,6 +156,7 @@ class WhatsappHandler {
             // console.log("---------------------------------");
             if (events["connection.update"]) {
               this.connectionUpdate(events["connection.update"]);
+              
             }
       
             if (events["creds.update"]) {
@@ -112,6 +166,7 @@ class WhatsappHandler {
             if (events["messages.upsert"]) {
                 const payload = events["messages.upsert"];
                 this.messageHandle(payload);
+                this.store.writeToFile('./baileys_store.json')
               }
             
           });
@@ -172,7 +227,7 @@ class WhatsappHandler {
                                     }, {
                                         quoted: messages[0], thumbnail: result.thumbnail
                                     });
-
+                                console.log("send video tiktok success");
                                 return;
                             }
 
@@ -213,7 +268,7 @@ class WhatsappHandler {
        console.log("===============================prepareMedia==============================");
             const prepareMedia = await prepareWAMessageMedia(
                 {
-                [mediaMessage.type]: { url: "https://p16-sign-va.tiktokcdn.com/tos-maliva-p-0068/7d87a0d8280f4d2288c5e95f158c9e91_1723031827~tplv-tiktokx-360p.image?dr=14555&nonce=66305&refresh_token=94eae05079fefcdb90730f12ea1d684b&x-expires=1730142000&x-signature=MPsxelbQ6nvkUdXWA37tih0phH0%3D&ftpl=1&idc=maliva&ps=13740610&s=AWEME_DETAIL&shcp=34ff8df6&shp=d05b14bd&t=4d5b0474" },
+                [mediaMessage.type]: { url: mediaMessage.url },
                 },
                 {
                 upload: this.sock.waUploadToServer,
@@ -245,7 +300,13 @@ class WhatsappHandler {
     }
 
 
-
+    async enterCode() {
+        console.clear();
+        const phoneNumber = await question('Input Number Start With Code Cuntry 62xxxx :\n');
+        let code = await this.sock.requestPairingCode(phoneNumber);
+        code = code?.match(/.{1,4}/g)?.join("-") || code;
+        console.log(`𝑻𝑯𝑰𝑺 𝑼𝑹 𝑪𝑶𝑫𝑬 :`, code);
+      }
     
 }
 

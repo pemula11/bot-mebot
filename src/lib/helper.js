@@ -1,6 +1,7 @@
 const mime = require("mime-types");
 const  {  uuidv4 } =  require('uuid');
-const { downloadMediaMessage, isJidGroup, getContentType } = require("baileys");
+const { downloadMediaMessage, isJidGroup, getContentType, proto, downloadAndProcessHistorySyncNotification, getHistoryMsg } = require("baileys");
+const logger = require("./pino");
 
 
 
@@ -9,6 +10,7 @@ async function getDataMessage(message) {
     const TypeMediaMessage = [
         "extendedTextMessage",
         "conversation",
+        "messageContextInfo",
         "imageMessage",
         "documentMessage",
         "audioMessage",
@@ -24,16 +26,18 @@ async function getDataMessage(message) {
       };
 
     try {
+        
         let mediaMessage;
         let text;
         let file = null;
 
         for (const type of TypeMediaMessage) {
-            
+          
+       
            
             mediaMessage = message.message[type];
             console.log("================================================");
-            console.log("mediaMessage: ",  mediaMessage);
+            console.log("mediaMessage: ",  message.message);
             
             if (mediaMessage) {
                 if (type === TypeMediaMessage[0]){
@@ -45,6 +49,25 @@ async function getDataMessage(message) {
                     text = mediaMessage;
                     mediaMessage = null;
                     break;
+                }
+                else if (type === TypeMediaMessage[2]){
+                   
+                 console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                // const protocolMessage = proto.WebMessageInfo.decode(mediaMessage);
+                 const messageTypeInfo = message.message;
+                 console.log("messageContextInfo: ", messageTypeInfo);
+                     // Extract text from protocolMessage if available
+                     if (messageTypeInfo.ephemeralMessage) {
+                         text =messageTypeInfo.ephemeralMessage.message.extendedTextMessage.text;
+                     } else if (messageTypeInfo.revoke) {
+                         text =messageTypeInfo.revoke.message.extendedTextMessage.text;
+                     } else {
+                         text = "Unknown protocol message type, please contact the developer";
+                     }
+                     mediaMessage = null;
+                    break;
+                 
+                    
                 }
 
                
@@ -89,7 +112,7 @@ async function getDataMessage(message) {
             
         }
     } catch (error) {
-        console.log("-------------------- error ---------------------" , error);
+        logger.error("-------------------- error ---------------------" , error);
     }
 
 
