@@ -10,7 +10,6 @@ async function getDataMessage(message) {
     const TypeMediaMessage = [
         "extendedTextMessage",
         "conversation",
-        "messageContextInfo",
         "imageMessage",
         "documentMessage",
         "audioMessage",
@@ -30,14 +29,37 @@ async function getDataMessage(message) {
         let mediaMessage;
         let text;
         let file = null;
+        let msg = message.message;
+
+        if (message.message.ephemeralMessage || message.message.revoke) {
+                 const messageTypeInfo = message.message;
+                 console.log("messageContextInfo: ", messageTypeInfo);
+                     // Extract text from protocolMessage if available
+                     if (messageTypeInfo.ephemeralMessage) {
+                         msg = messageTypeInfo.ephemeralMessage.message;
+                         console.log("=========================================---------------====-----------------------===");
+                         console.log("msg: ", msg);
+                     } else if (messageTypeInfo.revoke) {
+                         msg =messageTypeInfo.revoke.message.extendedTextMessage.text;
+                     } 
+                    //  else {
+                         
+                    //      throw new Error("Unknown protocol message type, please contact the developer");
+                         
+                    //  }
+        }
+        else{
+            console.log("=========================================---------------====-----------------------===");
+                         console.log("msg: ", msg);
+        }
 
         for (const type of TypeMediaMessage) {
           
        
            
-            mediaMessage = message.message[type];
+            mediaMessage = msg[type];
             console.log("================================================");
-            console.log("mediaMessage: ",  message.message);
+          //  console.log("mediaMessage: ",  msg);
             
             if (mediaMessage) {
                 if (type === TypeMediaMessage[0]){
@@ -50,28 +72,14 @@ async function getDataMessage(message) {
                     mediaMessage = null;
                     break;
                 }
-                else if (type === TypeMediaMessage[2]){
-                   
-                 console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-                // const protocolMessage = proto.WebMessageInfo.decode(mediaMessage);
-                 const messageTypeInfo = message.message;
-                 console.log("messageContextInfo: ", messageTypeInfo);
-                     // Extract text from protocolMessage if available
-                     if (messageTypeInfo.ephemeralMessage) {
-                         text =messageTypeInfo.ephemeralMessage.message.extendedTextMessage.text;
-                     } else if (messageTypeInfo.revoke) {
-                         text =messageTypeInfo.revoke.message.extendedTextMessage.text;
-                     } else {
-                         text = "Unknown protocol message type, please contact the developer";
-                     }
-                     mediaMessage = null;
-                    break;
-                 
-                    
-                }
+               
+                
+                
 
                
                 text = mediaMessage[keyText[type]];
+                console.log("text: ", mediaMessage[keyText[type]]);
+                console.log("OR text: ", mediaMessage["caption"]);
                 break;
             }
         }

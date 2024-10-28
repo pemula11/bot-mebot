@@ -7,8 +7,9 @@ yarn-error.log
 .env
 
 src/data/database.json
+
 # Logs & data
-logs/
+
 *.log
 baileys_store.json
 src/data/database.json

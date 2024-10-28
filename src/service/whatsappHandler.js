@@ -11,7 +11,6 @@ const {  useMultiFileAuthState,
     
    } =  require('baileys');
 const { get } = require('http');
-const pino = require("pino");
 const fs = require("fs");
 const Long = require("long");
 
@@ -181,7 +180,7 @@ class WhatsappHandler {
         for (const received of messages) {
             console.log("type: ", type);
             console.log("received: ", received);
-
+            logger.warn("received: ", received);
             if (type !== "notify" || !received?.message){
                 return ;
             }
