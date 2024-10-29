@@ -1,6 +1,8 @@
 
 const { downloadMediaMessage, isJidGroup, getContentType,  } = require("baileys");
+const moment = require('moment-timezone');
 const DatabaseHandler = require('./databaseHandler');
+const User = require('../model/user');
 const ApiAI = require('../tools/api/AI');
 const DownloaderVideo = require('../tools/api/downloaderVideo');
 const DownloaderApi = require('../tools/api/downloaderApi');
@@ -15,20 +17,38 @@ const y2mateDownloader = new YTdownloder();
 const y2AudioDownloader = new YTMusicdownloder();
 const downloaderApi = new DownloaderApi();
 
+const timeJakarta = moment().tz('Asia/Jakarta');
+
+
+const userVar = {
+    name: 'name',
+    jid: 'jid',
+    isRegister: 'isRegister',
+    registeredTime: 'registeredTime',
+    premium: 'premium',
+    banned: 'banned',
+    bannedTime: 'bannedTime',
+    bannedReason: 'bannedReason',
+    limit: 'limit',
+    lastClaimTime: 'lastClaimTime',
+    totalUsage: 'totalUsage'
+}
+
 class MessageHandler{
     constructor(){
         this.message = '';
         this.messageType = '';
         this.commands = {
-            'help': '/help',
-            'start': '/start',
-            'stop': '/stop',
-            'tanyaAI': '/tanyaAI',
-            'downloadFB': '/downloadFB',
-            'findAnime': '/findAnime',
-            'downloadYTvideo': '/YTvideo',
-            'downloadYTmp3': '/YTmp3',
-            'downloadTT': '/TT',
+            help: '/help',
+            start: '/start',
+            stop: '/stop',
+            tanyaAI: '/tanyaAI',
+            downloadFB: '/downloadFB',
+            findAnime: '/findAnime',
+            downloadYTvideo: '/ytvid',
+            downloadYTmp3: '/ytmp3',
+            downloadTT: '/tt',
+            downloadIG: '/ig',
         }
     }
 
@@ -39,17 +59,29 @@ class MessageHandler{
         if (isGroup) {
             return `Halo ${name}, Bot Tidak Dapat Digunakan Di Grup!`;
         }
-        const isRegister = await databaseHandler.get(jid);
-        
+        const userData = await databaseHandler.getUser(jid);
         switch (text) {
             case this.commands.start:
-                if (!isRegister){
-                    await databaseHandler.save(jid);
+                if (!userData){
+                    const data = new User(
+                        name,
+                        jid,
+                        true,
+                        timeJakarta.format('YYYY-MM-DD HH:mm:ss'),
+                        false,
+                        false,
+                        '',
+                        '',
+                        20,
+                        timeJakarta.format('YYYY-MM-DD HH:mm:ss'),
+                        0
+                    )
+                    await databaseHandler.saveUser(jid, data);
                 }
                 return `Halo ${name}, Bot Dijalankan!`;
                 
             case this.commands.stop:
-                if (isRegister){
+                if (userData){
                     await databaseHandler.delete(jid);
                 }
                 return `Halo ${name}, Bot Dihentikan!`;
@@ -60,9 +92,10 @@ class MessageHandler{
             default:
                 break;
         }
-        if (!isRegister) {
+        if (!userData) {
             return `Halo ${name}, Kamu Belum Terdaftar!`;
         }
+        console.log("register Data: ", userData[userVar.name]);
 
         if (text === 'halo') {
             return `Halo juga ${name}!`;
@@ -76,13 +109,20 @@ class MessageHandler{
             case this.commands.tanyaAI:
                 
                 const res = await chatGPT.ChatGPTResponse(question);
+                databaseHandler.addUsageData(jid);
                 return res;
             case this.commands.downloadYTvideo:
+                databaseHandler.addUsageData(jid);
                 return await y2mateDownloader.getDownloadLink(question);
             case this.commands.downloadYTmp3:
+                databaseHandler.addUsageData(jid);
                 return await y2AudioDownloader.getDownloadLink(question);
             case this.commands.downloadTT:
+                databaseHandler.addUsageData(jid);
                 return await downloaderApi.downloaderTT(question);
+            case this.commands.downloadIG:
+                databaseHandler.addUsageData(jid);
+                return await downloaderApi.downloaderInstagram(question);
             default:
                 return `Perintah Tidak Dikenal!`;
         }

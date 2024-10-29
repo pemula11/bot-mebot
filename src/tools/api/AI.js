@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('../../lib/pino');
 
 
 class ApiAI {
@@ -19,7 +20,7 @@ class ApiAI {
             
             return res.data.response;
         } catch (error) {
-            console.log("error while use ChatGPT: ", error);
+            logger.error("error while use ChatGPT: ", error);
         }    
     }
 

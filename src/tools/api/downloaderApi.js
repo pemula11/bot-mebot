@@ -65,6 +65,34 @@ class DownloaderApi {
         }    
     }
 
+    async downloaderInstagram(url){
+        if (!isValidUrl(url) ) {
+            return "Invalid URL provided!";
+        }
+        const encodedUrl = encodeURIComponent(url);
+
+
+        try {
+            let res = await axios.get(`http://api.ryzendesu.vip/api/downloader/igdl?url=${encodedUrl}`);
+            
+            if (res.status === 500 || res.data === false || res.data === null || res.status !== 200){
+                return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
+            }
+         //   console.log("res: ", res.data);
+            let data = res.data;
+            const dataReceived ={
+                title: '',
+                url: data.data[0].url,
+                thumbnail: data.data[0].thumbnail,
+                type: "video",
+                isTiktok: true
+            }
+            return dataReceived;
+        } catch (error) {
+            console.log("error while use Downloader: ", error);
+            return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
+        }    
+    }
 
 }
 

@@ -180,7 +180,6 @@ class WhatsappHandler {
         for (const received of messages) {
             console.log("type: ", type);
             console.log("received: ", received);
-            logger.warn("received: ", received);
             if (type !== "notify" || !received?.message){
                 return ;
             }
@@ -194,12 +193,13 @@ class WhatsappHandler {
             if (!dataMessage ) return console.log("+++++++++++++++++++++not a message+++++++++++++++++++++++++++++");
             
             const result = await this.messageHandler.handleMessage(dataMessage);
-            
+            console.log("result: ", result);
             if (result) {
                
                 if (typeof result === "object") {
-                   
+                   try {
                     if (result.url) {
+                       
                         /////////////////////////+////////////////////////
                         //if type audio
                             if (result.type == "audio") {
@@ -231,11 +231,13 @@ class WhatsappHandler {
                             }
 
                             ///////////////////////// if type any media
-                        const generateMedia = await this.mediaSender({url: result.url, title: result.title, type: result.type, thumbnail: result.thumbnail? result.thumbnail : null,});
+                        const generateMedia = await this.mediaSender({url: result.url, title: result.title? result.title : null , type: result.type, thumbnail: result.thumbnail? result.thumbnail : null,});
                         
+                        console.log("==============================prepareMedia: ", generateMedia);
+          
                         const messageToSend = { ...generateMedia.message };
                         let ownerJid = this.sock.user.id.replace(/:\d+/, "");
-                        const resultSend = await this.sock.sendMessage(
+                        await this.sock.sendMessage(
                             received.key.remoteJid,
                             {
                                 forward: {
@@ -245,12 +247,14 @@ class WhatsappHandler {
                             },
                             { quoted: messages[0] }
                         )
+                        
                         /////////////////////////+////////////////////////
-                    }
-                    await this.sock.sendMessage(
-                        received.key.remoteJid,
-                        { text: "send media failed" }, { quoted: messages[0] });
                     return;
+                    }
+                    }
+                    catch (error) {
+                        console.log("error while send media: ", error);
+                    }
                 }
                 await this.sock.sendMessage(
                     received.key.remoteJid,
@@ -285,8 +289,8 @@ class WhatsappHandler {
                 prepareMedia[mediaType].gifPlayback = false;
                 prepareMedia[mediaType].thumbnail = mediaMessage.thumbnail;
             }
-            console.log("prepareMedia: ", prepareMedia);
-            console.log("prepareMedia Type: ", prepareMedia[mediaType]);
+            // console.log("prepareMedia: ", prepareMedia);
+            // console.log("prepareMedia Type: ", prepareMedia[mediaType]);
             let ownerJid = this.sock.user.id.replace(/:\d+/, "");
             return await generateWAMessageFromContent(
                 "",

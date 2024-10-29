@@ -30,7 +30,9 @@ async function getDataMessage(message) {
         let text;
         let file = null;
         let msg = message.message;
-
+        if (message.message.protocolMessage) {
+            return;
+        }
         if (message.message.ephemeralMessage || message.message.revoke) {
                  const messageTypeInfo = message.message;
                  console.log("messageContextInfo: ", messageTypeInfo);
