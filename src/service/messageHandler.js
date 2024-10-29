@@ -9,6 +9,8 @@ const DownloaderApi = require('../tools/api/downloaderApi');
 const YTdownloder = require('../tools/y2madeDownloader');
 const YTMusicdownloder = require('../tools/y2AudioDownloader');
 const logger = require("../lib/pino");
+const {commands, helpMessage, profile, introMessage} = require("../lib/constant");
+
 
 const databaseHandler = new DatabaseHandler();
 const chatGPT = new ApiAI();
@@ -42,8 +44,9 @@ class MessageHandler{
             help: '/help',
             start: '/start',
             stop: '/stop',
+            profile: '/profile',
             tanyaAI: '/tanyaAI',
-            downloadFB: '/downloadFB',
+            downloadFB: '/fb',
             findAnime: '/findAnime',
             downloadYTvideo: '/ytvid',
             downloadYTmp3: '/ytmp3',
@@ -57,7 +60,7 @@ class MessageHandler{
         console.log("dataMessage: ", dataMessage);
         const {name, jid, isGroup, mediaMessage, text, file, location} = dataMessage;
         if (isGroup) {
-            return `Halo ${name}, Bot Tidak Dapat Digunakan Di Grup!`;
+            return `Maaf, Bot belum Dapat Digunakan Di Grup!`;
         }
         const userData = await databaseHandler.getUser(jid);
         switch (text) {
@@ -87,13 +90,12 @@ class MessageHandler{
                 return `Halo ${name}, Bot Dihentikan!`;
             case this.commands.help:
                 
-                return `Halo ${name},  data : ${dataMessage}`;
-            
+                return helpMessage;
             default:
                 break;
         }
         if (!userData) {
-            return `Halo ${name}, Kamu Belum Terdaftar!`;
+            return introMessage;
         }
         console.log("register Data: ", userData[userVar.name]);
 
@@ -107,22 +109,45 @@ class MessageHandler{
         let question = text.replace(getCommand, "").trim();
         switch (getCommand) {
             case this.commands.tanyaAI:
-                
+                if (!question || question === '') {
+                    return commands.tanyaAI;
+                }
                 const res = await chatGPT.ChatGPTResponse(question);
                 databaseHandler.addUsageData(jid);
                 return res;
             case this.commands.downloadYTvideo:
+                if (!question || question === '') {
+                    return commands.downloadYTvideo;
+                }
                 databaseHandler.addUsageData(jid);
                 return await y2mateDownloader.getDownloadLink(question);
             case this.commands.downloadYTmp3:
+                if (!question || question === '') {
+                    return commands.downloadYTmp3;
+                }
                 databaseHandler.addUsageData(jid);
                 return await y2AudioDownloader.getDownloadLink(question);
             case this.commands.downloadTT:
+                if (!question || question === '') {
+                    return commands.downloadTT;
+                }
                 databaseHandler.addUsageData(jid);
                 return await downloaderApi.downloaderTT(question);
             case this.commands.downloadIG:
+                if (!question || question === '') {
+                    return commands.downloadIG;
+                }
                 databaseHandler.addUsageData(jid);
                 return await downloaderApi.downloaderInstagram(question);
+            case this.commands.downloadFB:
+                if (!question || question === '') {
+                    return commands.downloadFB;
+                }
+                databaseHandler.addUsageData(jid);
+                return await downloaderApi.downloaderFacebook(question);
+            case this.commands.profile:
+                return profile(userData[userVar.name], userData[userVar.jid], userData[userVar.premium], userData[userVar.banned], userData[userVar.bannedTime], userData[userVar.bannedReason], userData[userVar.limit], userData[userVar.lastClaimTime], userData[userVar.totalUsage]);
+                
             default:
                 return `Perintah Tidak Dikenal!`;
         }

@@ -27,7 +27,7 @@ class DownloaderVideo {
             }
             return dataReceived;
         } catch (error) {
-           logger.error("error while use Downloader: ", error);
+           logger.error("error while use Downloader: ", {error});
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
         }    
     }

@@ -30,9 +30,7 @@ async function getDataMessage(message) {
         let text;
         let file = null;
         let msg = message.message;
-        if (message.message.protocolMessage) {
-            return;
-        }
+        
         if (message.message.ephemeralMessage || message.message.revoke) {
                  const messageTypeInfo = message.message;
                  console.log("messageContextInfo: ", messageTypeInfo);
@@ -74,11 +72,7 @@ async function getDataMessage(message) {
                     mediaMessage = null;
                     break;
                 }
-               
-                
-                
-
-               
+ 
                 text = mediaMessage[keyText[type]];
                 console.log("text: ", mediaMessage[keyText[type]]);
                 console.log("OR text: ", mediaMessage["caption"]);
@@ -122,7 +116,7 @@ async function getDataMessage(message) {
             
         }
     } catch (error) {
-        logger.error("-------------------- error ---------------------" , error);
+        logger.error("-------------------- error ---------------------" , {error});
     }
 
 
@@ -150,7 +144,7 @@ function isShortYouTubeURL(url) {
 }
 
 function isTikTokURL(url) {
-    const regex = /^(https?:\/\/)?(www\.)?(tiktok\.com|vm\.tiktok\.com)\/.+$/;
+    const regex = /^(https?:\/\/)?(www\.)?(tiktok\.com|vm\.tiktok\.com|vt\.tiktok\.com)\/.+$/;
     return regex.test(url);
 }
 

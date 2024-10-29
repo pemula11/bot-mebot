@@ -10,7 +10,8 @@ const {  useMultiFileAuthState,
     generateWAMessageFromContent,
     
    } =  require('baileys');
-const { get } = require('http');
+
+   const { get } = require('http');
 const fs = require("fs");
 const Long = require("long");
 
@@ -65,13 +66,14 @@ class WhatsappHandler {
                 printQRInTerminal: true,
                 qrTimeout: 30000,
             },
+            version
         };
 
         
 
         return  makeWASocket({
                 // can provide additional config here
-                version: [2, 3000, 1015901307],
+               
                 logger: logger,
                 auth: {
                     creds: this.authState.state.creds,
@@ -118,6 +120,8 @@ class WhatsappHandler {
         } 
         if (connection === "open") {
             console.log("opened connection");
+            console.log("connected as", await fetchLatestBaileysVersion());
+            console.log("connected as", await fetchLatestWaWebVersion());
             
         }
       
@@ -139,13 +143,13 @@ class WhatsappHandler {
 
             
             // can be read from a file
-            this.store.readFromFile('./baileys_store.json')
+           // this.store.readFromFile('./baileys_store.json')
             // saves the state to a file every 10s
    
             this.store.bind(this.sock.ev)
             return this.sock;
         } catch (error) {
-            logger.error("error: ", error);
+            logger.error("error: ", {error});
         }
     }
 
@@ -165,7 +169,7 @@ class WhatsappHandler {
             if (events["messages.upsert"]) {
                 const payload = events["messages.upsert"];
                 this.messageHandle(payload);
-                this.store.writeToFile('./baileys_store.json')
+               // this.store.writeToFile('./baileys_store.json')
               }
             
           });
@@ -179,9 +183,12 @@ class WhatsappHandler {
         //await this.sock.sendMessage(messages[0].key.remoteJid, { text: 'Hello there!' })
         for (const received of messages) {
             console.log("type: ", type);
-            console.log("received: ", received);
+            logger.info( {received});
             if (type !== "notify" || !received?.message){
                 return ;
+            }
+            if (received.message.protocolMessage) {
+                return;
             }
             if (Long.isLong(received.messageTimestamp)) {
                 received.messageTimestamp = received.messageTimestamp?.toNumber();
@@ -203,30 +210,50 @@ class WhatsappHandler {
                         /////////////////////////+////////////////////////
                         //if type audio
                             if (result.type == "audio") {
-                              const up = await this.sock.sendMessage(
+                              const aud = await this.sock.sendMessage(
                                 received.key.remoteJid, {
                                     audio: { url: result.url },
                                     ptt: false,
                                 }, 
                                 { quoted: messages[0] });
-                                
+                                console.log("audio: ", aud);
                                 return;
                             }
                             /////////////////////////
-      
-                            //if type video tiktok
-                            if (result.isTiktok) {
+                            
+                            //if type video 
+                            if (result.isMedia) {
+                                let additionalConfig = {};
+                                if (result.type === "video") {
+                                    additionalConfig = {
+                                        mimetype: "video/mp4",
+                                        caption: result.caption,
+                                        thumbnail: result.thumbnail,
+                                        gifPlayback: true,
+                                    };
+                                }
+                                else if (result.type === "image") {
+                                    additionalConfig = {
+                                        mimetype: "image/jpeg",
+                                        caption: result.caption,
+                                    };
+                                }
+                                else if (result.type === "audio") {
+                                    additionalConfig = {
+                                        mimetype: "audio/mp3",
+                                        
+                                    };
+                                }
+                                
+
                                 await this.sock.sendMessage(received.key.remoteJid, {
-                                        video: {
+                                        [result.type] : {
                                         url: result.url
                                         },
-                                        thumbnail: result.thumbnail,
-                                        mimetype: "video/mp4",
-                                        caption: `🎥Video telah berhasil didownload \n Judul: ${result.title}`
                                     }, {
                                         quoted: messages[0], thumbnail: result.thumbnail
-                                    });
-                                console.log("send video tiktok success");
+                                    }, additionalConfig);
+                                console.log("send video  success");
                                 return;
                             }
 
@@ -256,9 +283,13 @@ class WhatsappHandler {
                         console.log("error while send media: ", error);
                     }
                 }
+                try {
                 await this.sock.sendMessage(
                     received.key.remoteJid,
                     { text: result }, { quoted: messages[0] });
+                } catch (error) {
+                    console.log("error while send message: ", error);
+                }
             }
             
           }

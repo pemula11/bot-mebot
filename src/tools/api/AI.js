@@ -20,7 +20,7 @@ class ApiAI {
             
             return res.data.response;
         } catch (error) {
-            logger.error("error while use ChatGPT: ", error);
+            logger.error("error while use ChatGPT: ", {error});
         }    
     }
 

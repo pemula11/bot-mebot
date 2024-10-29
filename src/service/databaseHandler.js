@@ -46,7 +46,7 @@ class DatabaseHandler {
         dbUser[sender] = { ...data};
         await this.save();
     } catch (error) {
-        logger.error(error);
+        logger.error({error});
     }
   }
 

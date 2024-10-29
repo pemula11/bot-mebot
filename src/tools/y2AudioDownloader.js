@@ -59,6 +59,7 @@ class YTMusicdownloder {
             url: convert.data.dlink,
             type: "audio",
             ext: convert.data.ftype,
+            isMedia: true,
             quality: convert.data.fquality
         }
         return dataReceived;

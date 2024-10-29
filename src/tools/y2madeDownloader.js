@@ -29,7 +29,7 @@ class YTdownloder {
             headers: this.headers
           });
 
-
+          console.log("res ============"+  JSON.stringify(res.data));
         if (!res.data || !res.data.links || res.status !== 200){
             console.log("res: ", res);
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
@@ -37,10 +37,15 @@ class YTdownloder {
 
         const { title, links } = res.data;
         
-        const downloadData = Object.values(links["mp4"]).filter(option => {
+        let downloadData = Object.values(links["mp4"]).filter(option => {
             return (option.q === "480p" || option.q === "720p") && option.k !== '';
         });
     
+        if (downloadData.length === 0) {
+            downloadData = Object.values(links["mp4"]).filter(option => {
+                return (option.q === "360p") && option.k !== '';
+            });
+        }
         if (downloadData.length === 0) {
             return null;
         }
@@ -76,6 +81,7 @@ class YTdownloder {
           try {
             console.log("url: ", this.url);
             this.videoID = this.extractYouTubeID(this.url);
+           
             const videoData = await this.getDownloadData();
 
 
@@ -89,7 +95,7 @@ class YTdownloder {
           }
           catch (error) {
               console.log("error while use Downloader: ", error);
-              return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
+              return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid! \n silahkan cari video lainnya";
           }
     }
 
