@@ -81,12 +81,12 @@ class MessageHandler{
                     )
                     await databaseHandler.saveUser(jid, data);
                 }
-                return `Halo ${name}, Bot Dijalankan!`;
+                return `💕💕💕 Selamat @ ${jid}, Kamu telah berhasil mendaftar pada Bot kami! 💕💕💕 \n\n ${helpMessage}`;
                 
             case this.commands.stop:
-                if (userData){
-                    await databaseHandler.delete(jid);
-                }
+                // if (userData){
+                //     await databaseHandler.delete(jid);
+                // }
                 return `Halo ${name}, Bot Dihentikan!`;
             case this.commands.help:
                 
@@ -120,13 +120,13 @@ class MessageHandler{
                     return commands.downloadYTvideo;
                 }
                 databaseHandler.addUsageData(jid);
-                return await y2mateDownloader.getDownloadLink(question);
+                return await downloaderApi.downloaderYTvid(question);
             case this.commands.downloadYTmp3:
                 if (!question || question === '') {
                     return commands.downloadYTmp3;
                 }
                 databaseHandler.addUsageData(jid);
-                return await y2AudioDownloader.getDownloadLink(question);
+                return await downloaderApi.downloaderYTmp3(question);
             case this.commands.downloadTT:
                 if (!question || question === '') {
                     return commands.downloadTT;
@@ -146,7 +146,7 @@ class MessageHandler{
                 databaseHandler.addUsageData(jid);
                 return await downloaderApi.downloaderFacebook(question);
             case this.commands.profile:
-                return profile(userData[userVar.name], userData[userVar.jid], userData[userVar.premium], userData[userVar.banned], userData[userVar.bannedTime], userData[userVar.bannedReason], userData[userVar.limit], userData[userVar.lastClaimTime], userData[userVar.totalUsage]);
+                return profile(userData[userVar.name], userData[userVar.jid], userData[userVar.premium], userData[userVar.banned], userData[userVar.bannedTime], userData[userVar.bannedReason], userData[userVar.limit], userData[userVar.lastClaimTime], userData[userVar.totalUsage], userData[userVar.registeredTime]);
                 
             default:
                 return `Perintah Tidak Dikenal!`;

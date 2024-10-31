@@ -149,7 +149,7 @@ class WhatsappHandler {
             this.store.bind(this.sock.ev)
             return this.sock;
         } catch (error) {
-            logger.error("error: ", {error});
+            pinoLogger.error("error: ", {error});
         }
     }
 
@@ -206,14 +206,16 @@ class WhatsappHandler {
                 if (typeof result === "object") {
                    try {
                     if (result.url) {
-                       
+                        await this.sock.sendMessage(
+                            received.key.remoteJid,
+                            { text: "Media sedang diproses⌛⌛⌛" }, { quoted: messages[0] });
                         /////////////////////////+////////////////////////
                         //if type audio
                             if (result.type == "audio") {
                               const aud = await this.sock.sendMessage(
                                 received.key.remoteJid, {
-                                    audio: { url: result.url },
-                                    ptt: false,
+                                    audio: { url: result.url }, ppt: false
+                                   
                                 }, 
                                 { quoted: messages[0] });
                                 console.log("audio: ", aud);
@@ -227,33 +229,44 @@ class WhatsappHandler {
                                 if (result.type === "video") {
                                     additionalConfig = {
                                         mimetype: "video/mp4",
-                                        caption: result.caption,
-                                        thumbnail: result.thumbnail,
-                                        gifPlayback: true,
+                                        caption: result.title,
+                                        thumbnail: result.thumbnail
                                     };
                                 }
                                 else if (result.type === "image") {
                                     additionalConfig = {
                                         mimetype: "image/jpeg",
-                                        caption: result.caption,
+                                        caption: result.title,
                                     };
                                 }
                                 else if (result.type === "audio") {
                                     additionalConfig = {
                                         mimetype: "audio/mp3",
+                                        ptt: false,
                                         
                                     };
+                                }
+                                else if (result.type === "document") {
+                                    if (result.isVideo) {
+                                        additionalConfig = {
+                                            mimetype: "video/mp4",
+                                            caption: result.title,
+                                        };
+                                    }
+                                   
                                 }
                                 
 
                                 await this.sock.sendMessage(received.key.remoteJid, {
                                         [result.type] : {
-                                        url: result.url
+                                        url: result.url, mimetype: [additionalConfig.mimetype]
                                         },
+                                        ...additionalConfig
+                                            
                                     }, {
                                         quoted: messages[0], thumbnail: result.thumbnail
-                                    }, additionalConfig);
-                                console.log("send video  success");
+                                    } );
+                                pinoLogger.info("send video  success", {result});
                                 return;
                             }
 
@@ -280,7 +293,11 @@ class WhatsappHandler {
                     }
                     }
                     catch (error) {
-                        console.log("error while send media: ", error);
+                        pinoLogger.error("error while send media: ", {error});
+                        await this.sock.sendMessage(
+                            received.key.remoteJid,
+                            { text: "error while send media " }, { quoted: messages[0] });
+                        return;
                     }
                 }
                 try {

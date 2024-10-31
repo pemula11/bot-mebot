@@ -18,17 +18,57 @@ class DownloaderApi {
         }
 
         try {
-            let res = await axios.get(`http://api.ryzendesu.vip/api/downloader/ytmp4?url=${url}`);
+            let res = await axios.get(`https://widipe.com/download/ytdl?url=${url}`);
             
             if (res.status === 500 || res.data === false){
                 return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
             }
          //   console.log("res: ", res.data);
-            let data = res.data;
+            let data = res.data.result;
+            if (data === null || data.mp3 === null || data.mp3 === ''){
+                return "Maaf, Video tidak dapat diconvert!";
+            }
+
             const dataReceived ={
                 title: data.title,
-                url: data.url,
-                type: "audio"
+                url: data.mp3,
+                type: "audio",
+                isMedia: true
+                
+            }
+            return dataReceived;
+        } catch (error) {
+            console.log("error while use Downloader: ", error);
+            return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
+        }    
+    }
+
+    async downloaderYTvid(url){
+        if (!isValidUrl(url) || !isYouTubeURL(url)) {
+            return "Invalid URL provided!";
+        }
+        if (isShortYouTubeURL(url)){
+            url = convertShortToLongURL(url);
+        }
+
+        try {
+            let res = await axios.get(`https://widipe.com/download/ytdl?url=${url}`);
+           
+            if (res.status === 500 || res.data === false){
+                return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
+            }
+         //   console.log("res: ", res.data);
+            let data = res.data.result;
+            if (data === null || data.mp4 === null || data.mp4 === ''){
+                return "Maaf, Video tidak dapat diconvert!";
+            }
+
+            const dataReceived ={
+                title: data.title,
+                url: data.mp4,
+                type: "video",
+              
+                isMedia: true
                 
             }
             return dataReceived;
