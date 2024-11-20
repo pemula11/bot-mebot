@@ -1,6 +1,6 @@
 const { default: axios } = require("axios");
 
-const { convertShortToLongURL, isYouTubeURL, isShortYouTubeURL, isValidUrl } = require('../lib/helper');
+const { convertShortToLongURL, isYouTubeURL, isShortYouTubeURL, isValidUrl } = require('../../lib/helper');
 
 class YTMusicdownloder {
     constructor(parameters) {

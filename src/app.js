@@ -13,9 +13,9 @@ const {  useMultiFileAuthState,
 
 const messageHandler = new MessageHandler();
 const whatsappHandler = new WhatsappHandler(messageHandler);
-
-   const pino = require("pino");
+const pino = require("pino");
 const app = express();
+
 
 
 async function connectToWhatsApp () {

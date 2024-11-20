@@ -3,21 +3,14 @@ const { downloadMediaMessage, isJidGroup, getContentType,  } = require("baileys"
 const moment = require('moment-timezone');
 const DatabaseHandler = require('./databaseHandler');
 const User = require('../model/user');
-const ApiAI = require('../tools/api/AI');
-const DownloaderVideo = require('../tools/api/downloaderVideo');
-const DownloaderApi = require('../tools/api/downloaderApi');
-const YTdownloder = require('../tools/y2madeDownloader');
-const YTMusicdownloder = require('../tools/y2AudioDownloader');
 const logger = require("../lib/pino");
+const CommandHandler = require('./commandHandler');
 const {commands, helpMessage, profile, introMessage} = require("../lib/constant");
 
 
 const databaseHandler = new DatabaseHandler();
-const chatGPT = new ApiAI();
-const downloaderVideo = new DownloaderVideo();
-const y2mateDownloader = new YTdownloder();
-const y2AudioDownloader = new YTMusicdownloder();
-const downloaderApi = new DownloaderApi();
+const commandHandler = new CommandHandler();
+
 
 const timeJakarta = moment().tz('Asia/Jakarta');
 
@@ -107,50 +100,10 @@ class MessageHandler{
         }
         const getCommand = text.split(' ')[0];
         let question = text.replace(getCommand, "").trim();
-        switch (getCommand) {
-            case this.commands.tanyaAI:
-                if (!question || question === '') {
-                    return commands.tanyaAI;
-                }
-                const res = await chatGPT.ChatGPTResponse(question);
-                databaseHandler.addUsageData(jid);
-                return res;
-            case this.commands.downloadYTvideo:
-                if (!question || question === '') {
-                    return commands.downloadYTvideo;
-                }
-                databaseHandler.addUsageData(jid);
-                return await downloaderApi.downloaderYTvid(question);
-            case this.commands.downloadYTmp3:
-                if (!question || question === '') {
-                    return commands.downloadYTmp3;
-                }
-                databaseHandler.addUsageData(jid);
-                return await downloaderApi.downloaderYTmp3(question);
-            case this.commands.downloadTT:
-                if (!question || question === '') {
-                    return commands.downloadTT;
-                }
-                databaseHandler.addUsageData(jid);
-                return await downloaderApi.downloaderTT(question);
-            case this.commands.downloadIG:
-                if (!question || question === '') {
-                    return commands.downloadIG;
-                }
-                databaseHandler.addUsageData(jid);
-                return await downloaderApi.downloaderInstagram(question);
-            case this.commands.downloadFB:
-                if (!question || question === '') {
-                    return commands.downloadFB;
-                }
-                databaseHandler.addUsageData(jid);
-                return await downloaderApi.downloaderFacebook(question);
-            case this.commands.profile:
-                return profile(userData[userVar.name], userData[userVar.jid], userData[userVar.premium], userData[userVar.banned], userData[userVar.bannedTime], userData[userVar.bannedReason], userData[userVar.limit], userData[userVar.lastClaimTime], userData[userVar.totalUsage], userData[userVar.registeredTime]);
-                
-            default:
-                return `Perintah Tidak Dikenal!`;
-        }
+        const res = commandHandler.handleCommand(getCommand, question, userData);
+        databaseHandler.addUsageData(jid);
+        return res;
+       
     }
     catch (error) {
        logger.error("error while handle message: ", error);

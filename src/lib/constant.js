@@ -19,7 +19,7 @@ const helpMessage = `
 \n 6. */ig*     : ${commands.downloadIG}
 `;
 
-const introMessage = `Halo 👋, Kamu belum terdaftar pada Bot kami, silahkan ketik \n /start untuk memulai bot. 
+const introMessage = `Halo 👋, Kamu belum terdaftar pada Bot kami. \n silahkan ketik  */start* untuk memulai bot. 
         \n Jika butuh bantuan ketik /help \n Terima Kasih`;
 
 function profile  (name = '', jid = '', premium = false, banned = false, bannedTime = '', bannedReason = '', limit = 20,  lastClaimTime = '', totalUsage = 0, registerTime = '') {
