@@ -100,7 +100,7 @@ class MessageHandler{
         }
         const getCommand = text.split(' ')[0];
         let question = text.replace(getCommand, "").trim();
-        const res = commandHandler.handleCommand(getCommand, question, userData);
+        const res = commandHandler.handleCommand(getCommand, question, userData, dataMessage);
         databaseHandler.addUsageData(jid);
         return res;
        

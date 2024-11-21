@@ -15,7 +15,10 @@ async function ChatGPTResponse(question){
     }    
 }
 
-const handler = async (text) => {
+const handler = async (text, dataMessage = null) => {
+    console.log("=================================================================");
+    console.log("text: ", dataMessage);
+    console.log("text: ", text);
     return ChatGPTResponse(text);
 
 }

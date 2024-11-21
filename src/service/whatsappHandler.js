@@ -200,7 +200,7 @@ class WhatsappHandler {
             if (!dataMessage ) return console.log("+++++++++++++++++++++not a message+++++++++++++++++++++++++++++");
             
             const result = await this.messageHandler.handleMessage(dataMessage);
-            console.log("result: ", result);
+            logger.info("result: ", {result});
             if (result) {
                
                 if (typeof result === "object") {
@@ -234,10 +234,19 @@ class WhatsappHandler {
                                     };
                                 }
                                 else if (result.type === "image") {
-                                    additionalConfig = {
-                                        mimetype: "image/jpeg",
-                                        caption: result.title,
-                                    };
+                                    
+                                    await this.sock.sendMessage(
+                                        received.key.remoteJid,
+                                        {
+                                            image: result.url,
+                                            caption: result.title ? result.title : '',
+                                            thumbnail: result.thumbnail ? result.thumbnail : null,
+                                        },
+                                        { quoted: messages[0] }
+                                    );
+                            
+                                    pinoLogger.info("send image success", {result});
+                                    return;
                                 }
                                 else if (result.type === "audio") {
                                     additionalConfig = {
@@ -293,7 +302,7 @@ class WhatsappHandler {
                     }
                     }
                     catch (error) {
-                        pinoLogger.error("error while send media: ", {error});
+                        console.log("error while send media: ", {error});
                         await this.sock.sendMessage(
                             received.key.remoteJid,
                             { text: "error while send media " }, { quoted: messages[0] });

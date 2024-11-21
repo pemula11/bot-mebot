@@ -23,7 +23,7 @@ const directoryName = process.cwd();
 
 const pluginsDirectory = path.resolve(directoryName, 'src/plugins');
 const pattern = '**/*.js'; // Pola untuk mencocokkan semua file
-
+const tmpDir = path.resolve(directoryName, 'src/tmp');
 
 
 
@@ -35,16 +35,18 @@ class CommandHandler {
         this.loadPlugins();
     }
 
-    async handleCommand(command, text, sender) {
+    async handleCommand(command, text, sender, dataMessage) {
+        
         if ((!text || text === '')) return "Please provide a text!";
+
         
         const commandText = command.split(" ")[0].replace(/^\//, ''); // Menghapus awalan /
        
         console.log("-----------------------------------------------------------------");
-        console.log("command:", commandText);
+        console.log("command:", dataMessage);
 
         if (plugins[commandText]) {
-            return plugins[commandText].call(text);
+            return plugins[commandText].call(this ,text, dataMessage.file);
           }
           return "cant Command not found!";
     }
