@@ -1,6 +1,6 @@
 const axios = require('axios');
 
-async function downloaderYTvid(url){
+async function downloaderYTmp3(url){
     if (!isValidUrl(url) || !isYouTubeURL(url)) {
         return "Invalid URL provided!";
     }
@@ -10,21 +10,20 @@ async function downloaderYTvid(url){
 
     try {
         let res = await axios.get(`https://widipe.com/download/ytdl?url=${url}`);
-       
+        
         if (res.status === 500 || res.data === false){
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
         }
      //   console.log("res: ", res.data);
         let data = res.data.result;
-        if (data === null || data.mp4 === null || data.mp4 === ''){
+        if (data === null || data.mp3 === null || data.mp3 === ''){
             return "Maaf, Video tidak dapat diconvert!";
         }
 
         const dataReceived ={
             title: data.title,
-            url: data.mp4,
-            type: "video",
-          
+            url: data.mp3,
+            type: "audio",
             isMedia: true
             
         }
@@ -35,15 +34,17 @@ async function downloaderYTvid(url){
     }    
 }
 
-const handler = async (text) => {
-    return downloaderYTvid(text);
+const handler = async (prefix) => {
+    if ((!text || text === '')) return "Please provide a text!";
+    return downloaderYTmp3(prefix);
 
 }
 
-    handler.command = ['ytvid'];
+    handler.command = ['ytmp3'];
     handler.premium = false;
     handler.register = true;
-    handler.help = ['ytvid <url>'];
+    handler.help = ['ytmp3 <url>'];
     handler.limit = true;
     
-    module.exports =  handler;
+
+module.exports =  handler;

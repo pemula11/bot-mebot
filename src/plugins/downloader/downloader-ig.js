@@ -30,6 +30,7 @@ async function downloaderInstagram(url){
 }
 
 const handler = async (text) => {
+    if ((!text || text === '')) return "Please provide a text!";
     return downloaderInstagram(text);
 
 }

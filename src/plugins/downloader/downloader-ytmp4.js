@@ -1,6 +1,7 @@
 const axios = require('axios');
+const { isYouTubeURL, isShortYouTubeURL, convertShortToLongURL, isValidUrl } = require('../../lib/helper');
 
-async function downloaderYTmp3(url){
+async function downloaderYTvid(url){
     if (!isValidUrl(url) || !isYouTubeURL(url)) {
         return "Invalid URL provided!";
     }
@@ -9,21 +10,27 @@ async function downloaderYTmp3(url){
     }
 
     try {
-        let res = await axios.get(`https://widipe.com/download/ytdl?url=${url}`);
-        
+        let res = await axios.get(`https://api.botwa.space/api/ytmp4?url=${url}&apikey=wZkcnohdW3mJ`);
+       
         if (res.status === 500 || res.data === false){
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
         }
-     //   console.log("res: ", res.data);
-        let data = res.data.result;
-        if (data === null || data.mp3 === null || data.mp3 === ''){
-            return "Maaf, Video tidak dapat diconvert!";
+        
+        const result = res.data.result;
+        let downloadData = Object.values(result["media"]).filter(option => {
+            console.log("option: ", option);
+            return option.key === '480' || option.key === '720';
+        });
+    
+        if (downloadData.length === 0) {
+            downloadData = [Object.values(result["media"])[0]];
         }
-
+        console.log("downloadData: ", downloadData);
         const dataReceived ={
-            title: data.title,
-            url: data.mp3,
-            type: "audio",
+            title: result.metadata.title,
+            url: downloadData[0].url,
+            type: "video",
+            thumbnail: result.metadata.thumbnail,
             isMedia: true
             
         }
@@ -34,16 +41,16 @@ async function downloaderYTmp3(url){
     }    
 }
 
-const handler = async (prefix) => {
-    return downloaderYTmp3(prefix);
+const handler = async (text) => {
+    if ((!text || text === '')) return "Please provide a text!";
+    return downloaderYTvid(text);
 
 }
 
-    handler.command = ['ytmp3'];
+    handler.command = ['ytvid'];
     handler.premium = false;
     handler.register = true;
-    handler.help = ['ytmp3 <url>'];
+    handler.help = ['ytvid <url>'];
     handler.limit = true;
     
-
-module.exports =  handler;
+    module.exports =  handler;

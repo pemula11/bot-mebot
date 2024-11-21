@@ -315,6 +315,7 @@ class WhatsappHandler {
                     { text: result }, { quoted: messages[0] });
                 } catch (error) {
                     console.log("error while send message: ", error);
+                    console.log("error while send message: ", result);
                 }
             }
             

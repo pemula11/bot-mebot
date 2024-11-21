@@ -37,7 +37,7 @@ class CommandHandler {
 
     async handleCommand(command, text, sender, dataMessage) {
         
-        if ((!text || text === '')) return "Please provide a text!";
+        
 
         
         const commandText = command.split(" ")[0].replace(/^\//, ''); // Menghapus awalan /

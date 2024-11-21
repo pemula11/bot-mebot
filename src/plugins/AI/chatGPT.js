@@ -16,9 +16,7 @@ async function ChatGPTResponse(question){
 }
 
 const handler = async (text, dataMessage = null) => {
-    console.log("=================================================================");
-    console.log("text: ", dataMessage);
-    console.log("text: ", text);
+    if ((!text || text === '')) return "Please provide a text!";
     return ChatGPTResponse(text);
 
 }
