@@ -38,13 +38,6 @@ class MessageHandler{
             start: '/start',
             stop: '/stop',
             profile: '/profile',
-            tanyaAI: '/tanyaAI',
-            downloadFB: '/fb',
-            findAnime: '/findAnime',
-            downloadYTvideo: '/ytvid',
-            downloadYTmp3: '/ytmp3',
-            downloadTT: '/tt',
-            downloadIG: '/ig',
         }
     }
 
@@ -74,7 +67,7 @@ class MessageHandler{
                     )
                     await databaseHandler.saveUser(jid, data);
                 }
-                return `💕💕💕 Selamat @ ${jid}, Kamu telah berhasil mendaftar pada Bot kami! 💕💕💕 \n\n ${helpMessage}`;
+                return `💕💕💕 Selamat @${jid}, Kamu telah berhasil mendaftar pada Bot kami! 💕💕💕 \n\n ${commandHandler.getAllCommands()}`;
                 
             case this.commands.stop:
                 // if (userData){
@@ -83,7 +76,7 @@ class MessageHandler{
                 return `Halo ${name}, Bot Dihentikan!`;
             case this.commands.help:
                 
-                return helpMessage;
+                return commandHandler.getAllCommands();
             default:
                 break;
         }

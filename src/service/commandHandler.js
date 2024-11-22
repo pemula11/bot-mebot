@@ -127,6 +127,23 @@ class CommandHandler {
            logger.error(`\nError sending message: ${e}`);
          }
      }
+
+    async getAllCommands() {
+     
+      const commands = Object.keys(plugins);
+
+      const commandsList = commands.map((command) => {
+        const handler = plugins[command];
+        const help = handler.help ? handler.help.join("\n") : "No help found";
+        
+        return `╟ */${command}* - ${help}`;
+      });
+      const text = 
+      `╔══════════════ \n║ *🤖 Bot Commands 🤖* \n╚══════════════`;
+      const commandListText = `\n╔══════════════ \n${commandsList.join("\n")} \n╚══════════════`;
+       
+      return text + commandListText;
+    }
 }
 
 module.exports = CommandHandler;

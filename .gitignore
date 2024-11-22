@@ -7,7 +7,7 @@ yarn-error.log
 .env
 
 src/data/
-
+src/tmp/
 # Logs & data
 
 *.log

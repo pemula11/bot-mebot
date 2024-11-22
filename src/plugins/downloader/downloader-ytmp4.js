@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { isYouTubeURL, isShortYouTubeURL, convertShortToLongURL, isValidUrl } = require('../../lib/helper');
+const logger = require('../../lib/pino');
 
 async function downloaderYTvid(url){
     if (!isValidUrl(url) || !isYouTubeURL(url)) {
@@ -18,14 +19,14 @@ async function downloaderYTvid(url){
         
         const result = res.data.result;
         let downloadData = Object.values(result["media"]).filter(option => {
-            console.log("option: ", option);
+           
             return option.key === '480' || option.key === '720';
         });
     
         if (downloadData.length === 0) {
             downloadData = [Object.values(result["media"])[0]];
         }
-        console.log("downloadData: ", downloadData);
+     
         const dataReceived ={
             title: result.metadata.title,
             url: downloadData[0].url,
@@ -36,7 +37,7 @@ async function downloaderYTvid(url){
         }
         return dataReceived;
     } catch (error) {
-        console.log("error while use Downloader: ", error);
+        logger.error("error while use Downloader: ", {error});
         return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
     }    
 }

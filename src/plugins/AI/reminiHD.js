@@ -40,6 +40,9 @@ async function reminiHd(url){
 const handler = async (text, dataMessage) => {
     console.log("=================================================================");
        
+    if (!dataMessage || !dataMessage.stream || !dataMessage.fileName) {
+        return "Please provide a valid image!";
+    }
      const tempFilePath = path.join(tmpDir, dataMessage.fileName);
         // Membuat direktori sementara jika belum ada
     // Membuat form data

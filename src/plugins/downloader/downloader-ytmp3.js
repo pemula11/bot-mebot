@@ -1,4 +1,7 @@
 const axios = require('axios');
+const { isYouTubeURL, isShortYouTubeURL, convertShortToLongURL, isValidUrl } = require('../../lib/helper');
+const logger = require('../../lib/pino');
+
 
 async function downloaderYTmp3(url){
     if (!isValidUrl(url) || !isYouTubeURL(url)) {
@@ -9,34 +12,39 @@ async function downloaderYTmp3(url){
     }
 
     try {
-        let res = await axios.get(`https://widipe.com/download/ytdl?url=${url}`);
-        
+        let res = await axios.get(`https://api.botwa.space/api/ytmp4?url=${url}&apikey=wZkcnohdW3mJ`);
+       
         if (res.status === 500 || res.data === false){
             return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
         }
-     //   console.log("res: ", res.data);
-        let data = res.data.result;
-        if (data === null || data.mp3 === null || data.mp3 === ''){
-            return "Maaf, Video tidak dapat diconvert!";
+        
+        const result = res.data.result;
+        let downloadData = Object.values(result["media"]).filter(option => {
+            
+            return option.key === '128kbps' || option.key === '320kbps';
+        });
+    
+        if (downloadData.length === 0) {
+            downloadData = [Object.values(result["media"])[0]];
         }
 
         const dataReceived ={
-            title: data.title,
-            url: data.mp3,
+            title: result.metadata.title,
+            url: downloadData[0].url,
             type: "audio",
             isMedia: true
-            
         }
+
         return dataReceived;
     } catch (error) {
-        console.log("error while use Downloader: ", error);
+        logger.error("error while use Downloader: ", {error});
         return "Maaf, Terjadi Kesalahan. Mungkin link yang diberikan salah/tidak valid!";
     }    
 }
 
-const handler = async (prefix) => {
+const handler = async (text) => {
     if ((!text || text === '')) return "Please provide a text!";
-    return downloaderYTmp3(prefix);
+    return downloaderYTmp3(text);
 
 }
 
