@@ -1,6 +1,6 @@
 
 const pino = require('pino');
-require('dotenv').config();
+const config = require('./config');
 
 const fileTransport = pino.transport({
     targets: [
@@ -8,10 +8,10 @@ const fileTransport = pino.transport({
             level: 'error',
             options: { mkdir: true, destination: `${process.cwd()}/logs/appErr.log` } 
         },
-        {
+        ...(config.logToken ? [{
             target: "@logtail/pino",
-            options: { sourceToken: process.env.LOG_TOKEN }
-        },
+            options: { sourceToken: config.logToken }
+        }] : []),
         {   target: 'pino/file', 
             options: { mkdir: true, destination: `${process.cwd()}/logs/app.log` }
         },
@@ -24,5 +24,11 @@ const fileTransport = pino.transport({
 
 
 const logger = pino(fileTransport);
+
+function getLogger(bindings = {}) {
+  return logger.child(bindings);
+}
+
 module.exports = logger;
+module.exports.getLogger = getLogger;
 

@@ -1,6 +1,8 @@
 const express = require('express');
 const WhatsappHandler = require('./service/whatsappHandler');
 const MessageHandler = require('./service/messageHandler');
+const DatabaseHandler = require('./service/databaseHandler');
+const CommandRouter = require('./service/commandHandler');
 const {  useMultiFileAuthState,
     fetchLatestBaileysVersion,
     makeCacheableSignalKeyStore,
@@ -11,7 +13,10 @@ const {  useMultiFileAuthState,
     generateWAMessageFromContent,
    } =  require('baileys');
 
-const messageHandler = new MessageHandler();
+// Compose dependencies
+const userRepository = new DatabaseHandler();
+const commandRouter = new CommandRouter();
+const messageHandler = new MessageHandler({ userRepository, commandRouter });
 const whatsappHandler = new WhatsappHandler(messageHandler);
 const pino = require("pino");
 const app = express();

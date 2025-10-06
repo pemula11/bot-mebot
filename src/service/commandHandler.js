@@ -29,7 +29,7 @@ const tmpDir = path.resolve(directoryName, 'src/tmp');
 
 global.plugins = {};  
 
-class CommandHandler {
+class CommandRouter {
     constructor(parameters) {
         this.status = {};
         this.loadPlugins();
@@ -146,4 +146,4 @@ class CommandHandler {
     }
 }
 
-module.exports = CommandHandler;
+module.exports = CommandRouter;

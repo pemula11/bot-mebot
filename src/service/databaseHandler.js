@@ -1,6 +1,7 @@
 const fs = require("fs");
 const logger = require("../lib/pino");
 const User = require("../model/user");
+const UserRepository = require('./interfaces/userRepository');
 
 const defaultData = { 
   users: {},
@@ -10,28 +11,49 @@ const defaultData = {
 
 
 
-class DatabaseHandler {
+class DatabaseHandler extends UserRepository {
   constructor() {
-    this.path = `${__dirname}/../data/database.json`;
-    if (!fs.existsSync(this.path)) {
-        
-        const data = JSON.stringify(defaultData);
-        fs.writeFileSync(this.path, data);
+    super();
+    const dataDir = `${__dirname}/../data`;
+    this.path = `${dataDir}/database.json`;
+    try {
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        if (!fs.existsSync(this.path)) {
+            const data = JSON.stringify(defaultData);
+            fs.writeFileSync(this.path, data);
+            this.database = defaultData;
+        } else {
+            const raw = fs.readFileSync(this.path, "utf-8");
+            if (!raw || raw.trim().length === 0) {
+                this.database = defaultData;
+                fs.writeFileSync(this.path, JSON.stringify(defaultData));
+            } else {
+                try {
+                    this.database = JSON.parse(raw);
+                } catch (e) {
+                    logger.error({ e }, "Invalid JSON in database.json, reinitializing");
+                    this.database = defaultData;
+                    fs.writeFileSync(this.path, JSON.stringify(defaultData));
+                }
+            }
+        }
+    } catch (error) {
+        logger.error({ error }, "Failed initializing database file, using in-memory default");
         this.database = defaultData;
-        console.log("database: ", data);
-    }
-    else{
-      
-        this.database = JSON.parse(fs.readFileSync(this.path, "utf-8"));
-      
     }
     
   }
 
     async load() {
-        const data = fs.readFileSync(this.path, "utf-8");
-        const senders = JSON.parse(data);
-        return senders;
+        try {
+            const data = fs.readFileSync(this.path, "utf-8");
+            return JSON.parse(data);
+        } catch (error) {
+            logger.error({ error }, "Failed to load database file, returning current memory state");
+            return this.database;
+        }
     }
 
     async loadUserDB() {
@@ -88,10 +110,9 @@ class DatabaseHandler {
 
   async save() {
     try {
-       
         fs.writeFileSync(this.path, JSON.stringify(this.database));
     } catch (error) {
-        console.log(error);
+        logger.error({ error }, "Failed saving database file");
     }
   }
 
