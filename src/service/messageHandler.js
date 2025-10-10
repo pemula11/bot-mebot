@@ -90,13 +90,14 @@ class MessageHandler{
         }
         const getCommand = text.split(' ')[0];
         let question = text.replace(getCommand, "").trim();
-        const res = this.commandRouter.handleCommand(getCommand, question, userData, dataMessage);
+        const res = await this.commandRouter.handleCommand(getCommand, question, userData, dataMessage);
         this.userRepository.addUsageData(jid);
         return res;
        
     }
     catch (error) {
        logger.error("error while handle message: ", error);
+       console.log("error: ", error);
         return `Maaf, Terjadi Kesalahan!`;
     }
     }

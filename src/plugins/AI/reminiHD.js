@@ -7,7 +7,8 @@ const tmpDir = path.resolve(directoryName, 'src/tmp');
 const  Jimp  = require("jimp");
 
 async function reminiHd(url){
-    
+    console.log("=================================================================");   
+    console.log("url: ", url);
     const encodedUrl = encodeURIComponent(url);
 
 
@@ -39,7 +40,7 @@ async function reminiHd(url){
 
 const handler = async (text, dataMessage) => {
     console.log("=================================================================");
-       
+    console.log("dataMessage: ", dataMessage);
     if (!dataMessage || !dataMessage.stream || !dataMessage.fileName) {
         return "Please provide a valid image!";
     }
@@ -68,6 +69,7 @@ const handler = async (text, dataMessage) => {
        
         // Mendapatkan URL dari respons API
         const imageUrl = uploadResponse.data.link;
+        console.log("imageUrl: ",  uploadResponse.data.link);
         const res = reminiHd(imageUrl);
        return res;
     } catch (error) {

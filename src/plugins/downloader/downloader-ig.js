@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { isValidUrl } = require('../../lib/helper');
 
 async function downloaderInstagram(url){
     if (!isValidUrl(url) ) {

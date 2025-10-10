@@ -1,4 +1,6 @@
 const axios = require('axios');
+const mime = require('mime-types');
+const { isValidUrl, isTikTokURL } = require('../../lib/helper');
 
 async function downloaderTT(url){
     if (!isValidUrl(url) && !isTikTokURL(url)) {
@@ -15,7 +17,7 @@ async function downloaderTT(url){
         }
          console.log("res: ", res.data);
         const typevid= getFileType(res.data.data.play);
-        let data = res.data;
+        let data = res.data.data;
         const dataReceived ={
             
             url: data.data.play,

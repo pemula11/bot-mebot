@@ -11,7 +11,7 @@ async function ChatGPTResponse(question){
         
         return res.data.response;
     } catch (error) {
-        logger.error("error while use ChatGPT: ", {error});
+        console.log("error while use ChatGPT: ", {error});
     }    
 }
 
